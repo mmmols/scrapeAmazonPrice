@@ -1,22 +1,23 @@
 import requests
 from bs4 import BeautifulSoup
 import smtplib
+import os
 
 URL = 'https://www.amazon.de/Apple-Retina-Display-prozessor-generation/dp/B07PX85BT3/ref=sr_1_1?crid=OP3M4TEZ7T2B&keywords=imac+27+2019&qid=1568228287&s=gateway&sprefix=imac%2Caps%2C184&sr=8-1'
 
 headers = {"User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.75 Safari/537.36'}
+password = os.environ['gmail_app_password']
 
-def check_price():
+def scrape_price(priceToCompare):
     page = requests.get(URL, headers=headers)
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
-    title = soup.find(id="productTitle").get_text()
     price = soup.find(id="priceblock_ourprice").get_text()
-    converted_price = float(price[0:5])
-    print(converted_price)
+    formatted_price = float(price[0:5])
+    print(formatted_price)
 
-    if (converted_price < 1.700):
+    if (formatted_price < priceToCompare):
         send_mail()
 
 def send_mail():
@@ -25,7 +26,7 @@ def send_mail():
     server.starttls()
     server.ehlo()
 
-    server.login('oldmols@gmail.com', 'zfruedmpazkwfrdw')
+    server.login('oldmols@gmail.com', password)
 
     subject = 'Price fell down!'
     body = f"Check the Amazon link: {URL}"
@@ -38,6 +39,6 @@ def send_mail():
 
     print('Email has been sent!')
 
-    server.quit(
+    server.quit()
 
-check_price()
+scrape_price(1.700)
